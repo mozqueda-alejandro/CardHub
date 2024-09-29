@@ -1,0 +1,61 @@
+﻿## User-specific files ##
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Rider ##
+.idea/
+.idea/.idea_modules/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/contentModel.xml
+.idea/**/deployment.xml
+.idea/**/deploymentArtifacts.xml
+.idea/**/deploymentLastDeployment.xml
+
+## OS generated files ##
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.tpm
+
+## Application Insights ##
+ApplicationInsights.config
+
+## File-based packages ##
+*.nupkg
+# The packages folder can be ignored if package restore is enabled in the solution
+**/packages/*
+# Uncomment if necessary however generally it will be regenerated when needed
+#!**/packages/build/
+#!**/packages/rebuild/
+#!**/packages/templates/
+
+## Windows shortcuts ##
+*.lnk
+
+## ASP.NET Core ##
+bin/
+obj/
+wwwroot/
+appsettings.json
+appsettings.*.json
+
+## Logs ##
+*.log
+logs/

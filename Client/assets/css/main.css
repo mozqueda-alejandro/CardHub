@@ -1,0 +1,13 @@
+
+.ch-height {
+    min-height: 3.5rem;
+    height: 3.5rem;
+}
+
+.ch-radius {
+    border-radius: 0.75rem;
+}
+
+.ch-font {
+    font-weight: 800;
+}

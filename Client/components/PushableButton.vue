@@ -5,9 +5,13 @@
 const props = defineProps({
   label: String,
   severity: {
-    type: String,
+    type: String as () => "primary" | "secondary",
     default: "primary",
     validator: (value: string) => ["primary", "secondary"].includes(value)
+  },
+  disabled: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -49,7 +53,7 @@ const frontStyles = computed(() => {
 </script>
 
 <template>
-  <button class="pushable">
+  <button class="pushable" :disabled="props.disabled">
     <span class="shadow"></span>
     <span class="edge" :style="edgeStyles"></span>
     <span class="front ch-height" :style="frontStyles">

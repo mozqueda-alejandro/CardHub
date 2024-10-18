@@ -8,7 +8,7 @@
 #background {
   height: 100%;
   width: 100%;
-  background: linear-gradient(20deg, #000000 0%, #282828 100%);
+  background: linear-gradient(20deg, #040404 0%, #232323 100%);
   position: fixed;
   top: 0;
   left: 0;

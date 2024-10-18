@@ -1,3 +1,7 @@
+using System.Collections.Concurrent;
+using CardHub.Games.Une;
+using CardHub.Games.Une.Entities;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -29,6 +33,14 @@ builder.Services.AddCors(options =>
     });
 });
 
+
+#region DI
+
+builder.Services.AddSingleton<IDictionary<string, UneGame>>(_ => new ConcurrentDictionary<string, UneGame>());
+
+#endregion
+
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
@@ -45,7 +57,11 @@ else
 }
 
 app.UseAuthorization();
-
 app.MapControllers();
+
+app.MapHub<UneHub>("/unehub", options =>
+{
+    options.AllowStatefulReconnects = true;
+});
 
 app.Run();

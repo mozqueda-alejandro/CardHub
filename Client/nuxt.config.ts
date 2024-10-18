@@ -3,7 +3,12 @@ export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
   css: ["~/assets/css/main.css", "~/assets/css/fonts.css"],
   devtools: { enabled: true },
-  modules: ["@nuxtjs/tailwindcss", "nuxt-svgo"],
+  modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt", [
+    'nuxt-svgo',
+    {
+      defaultImport: 'component',
+    },
+  ]],
   runtimeConfig: {
     public: {
       baseURL: process.env.BASE_URL

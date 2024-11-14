@@ -1,4 +1,4 @@
-
+C# SignalR ASP.NET Core Web API with Vue 3 SPA. Multiplayer turn based game with various rooms.
 
 The GB and players connect using WebSockets to the Hub of their associated game (UneHub for UneGame).
 
@@ -47,16 +47,3 @@ CAH
 * CircularOrder (Strict)
 
 
-
-
-
-
-
-
-
-Games
-1. Une
-2. CAH
-3. Poker
-4. Blackjack
-5. Tens

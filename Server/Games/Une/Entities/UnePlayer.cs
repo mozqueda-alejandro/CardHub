@@ -1,6 +1,9 @@
-﻿namespace CardHub.Games.Une.Entities;
+﻿using CardHub.Games.Common;
+using CardHub.Games.Une.Card;
 
-public class UnePlayer
+namespace CardHub.Games.Une.Entities;
+
+public class UnePlayer : CardPlayer<UneCard>
 {
-    
+    public UnePlayer(string name) : base(name) { }
 }

@@ -1,6 +1,6 @@
 ﻿namespace CardHub.Games.Common;
 
-public class IPlayer
+public interface IPlayer
 {
-    
+    string Name { get; init; }
 }

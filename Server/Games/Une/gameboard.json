@@ -1,0 +1,7 @@
+{
+  "discardPile": [{}, {}],
+  "turnStarted": 0,
+  "turnExpires": 1,
+  "players": [],
+  "currentPlayer": ""
+}

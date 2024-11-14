@@ -5,6 +5,8 @@ namespace CardHub.Games.Une;
 
 public class UneHub : Hub<IBaseClient>, IBaseHub
 {
+    private readonly Dictionary<int, CancellationTokenSource> _timers = new();
+    
     public Task StartGame()
     {
         throw new NotImplementedException();
@@ -31,6 +33,11 @@ public class UneHub : Hub<IBaseClient>, IBaseHub
     }
 
     public Task RestartGame()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task GetGameState()
     {
         throw new NotImplementedException();
     }

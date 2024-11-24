@@ -11,11 +11,13 @@ public class UneCardBuilder
     private HashSet<int> _drawAmounts = [];
     private HashSet<UneCard> _cards;
 
+    private IDictionary<int, UneCard> CardSet;
     private Dictionary<int, int> _cardFrequencies = [];
 
-    public UneCardBuilder(IEqualityComparer<UneCard> comparer)
+    public UneCardBuilder(IEqualityComparer<UneCard> comparer, IDictionary<int, UneCard> cardSet)
     {
         _cards = new HashSet<UneCard>(comparer);
+        CardSet = cardSet;
     }
 
     private static List<UneColor> _standardColors = [UneColor.Blue, UneColor.Green, UneColor.Red, UneColor.Yellow];
@@ -136,7 +138,13 @@ public class UneCardBuilder
         else SetColors(_standardColors);
     }
 
-    public List<UneCard> Build() => _cards.ToList();
+    public List<UneCard> Build()
+    {
+        var cards = _cards.ToList();
+        cards.ForEach(card => CardSet.Add(card.Id, card));
+        
+        return cards;
+    }
 
     private void Validate()
     {

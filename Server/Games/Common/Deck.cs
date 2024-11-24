@@ -1,6 +1,8 @@
-﻿namespace CardHub.Games.Common;
+﻿using System.Collections;
 
-public class Deck<TCard> : IDeck<TCard> where TCard : class
+namespace CardHub.Games.Common;
+
+public class Deck<TCard> : IDeck<TCard> where TCard : ICard
 {
     private List<TCard> _cards = [];
     private readonly List<TCard> _discardPile = [];

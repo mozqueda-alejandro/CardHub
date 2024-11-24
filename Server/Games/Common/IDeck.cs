@@ -1,6 +1,6 @@
 ﻿namespace CardHub.Games.Common;
 
-public interface IDeck<TCard>
+public interface IDeck<TCard> where TCard : ICard
 {
     void Add(TCard card);
     void AddRange(IEnumerable<TCard> cards);

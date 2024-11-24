@@ -14,6 +14,9 @@ public enum GameState
 
 public class UneGame
 {
+    private readonly IDictionary<int, UneCard> _cardSet;
+    
+    private UneDeckFactory _deckFactory;
     private Deck<UneCard> _deck;
     private UneOrder<UnePlayer> _order;
     private int _toDraw;
@@ -21,16 +24,22 @@ public class UneGame
     private GameState _state = GameState.Start;
     private bool _sayUneResolved = false;
 
-    public UneGame(UnePlayer[] players, List<UneCard> deck)
+    public UneGame(IDictionary<int, UneCard> cardSet, UneDeckFactory deckFactory)
     {
-        _deck = new Deck<UneCard>(deck);
-        _order = new UneOrder<UnePlayer>(players);
+        _cardSet = cardSet;
+        _deckFactory = deckFactory;
+        _deck = new Deck<UneCard>();
         _toDraw = 0;
-        
+    }
+
+    public void AddPlayers(List<UnePlayer> players)
+    {
+        _order = new UneOrder<UnePlayer>(players);
     }
 
     public async Task StartGame()
     {
+        _deck.AddRange(_deckFactory.Create());
         _order.Shuffle();
         _deck.Shuffle();
 
@@ -66,6 +75,7 @@ public class UneGame
 
     public async Task EndGame(string winner = "")
     {
+        
         Console.WriteLine($"{winner} has won!");
     }
 

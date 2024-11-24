@@ -114,8 +114,5 @@ public class UneOrder<TPlayer> : IUneOrder<TPlayer>, IEnumerable where TPlayer :
         return _players.Select(player => player.Value).GetEnumerator();
     }
     
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

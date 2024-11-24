@@ -41,8 +41,13 @@ builder.Logging.AddConsole();
 #region DI
 
 // builder.Services.AddSingleton<IDictionary<string, UneGame>>(_ => new ConcurrentDictionary<string, UneGame>());
+builder.Services.AddSingleton<IDictionary<int, UneCard>>(new Dictionary<int, UneCard>());
 builder.Services.AddSingleton<IEqualityComparer<UneCard>, UneCardEqualityComparer>();
 builder.Services.AddSingleton<UneCardBuilder>();
+builder.Services.AddSingleton<UneDeckFactory>();
+builder.Services.AddTransient<UneGameFactory>();
+builder.Services.AddTransient<UneGame>();
+builder.Services.AddSingleton<Func<UneGame>>(x => () => x.GetService<UneGame>()!);
 
 #endregion
 
@@ -74,6 +79,7 @@ var app = builder.Build();
 
 using var scope = app.Services.CreateScope(); // Create a scoped DI context
 var uneBuilder = scope.ServiceProvider.GetRequiredService<UneCardBuilder>();
+var uneFactory = scope.ServiceProvider.GetRequiredService<UneGameFactory>();
 
 uneBuilder.SetNumber(0).AddCards();
 uneBuilder.SetNumbers(1, 10).AddCards(2);
@@ -98,11 +104,13 @@ var rubi = new UnePlayer("Rubi");
 var lyssie = new UnePlayer("Lyssie");
 var alex = new UnePlayer("Alex");
 
-var players = new[] { rubi, lyssie, alex };
-var game = new UneGame(players, uneCards);
+var players = new List<UnePlayer>{ rubi, lyssie, alex };
+var game = uneFactory.Create(players);
+Console.WriteLine("Une Game created");
 
-Console.WriteLine("Une Game!");
 await game.StartGame();
+Console.WriteLine("Une Game created");
+
 Console.WriteLine("Your cards: ");
 var myState = await game.GetStatePlayer("Alex");
 myState.Hand.ForEach(Console.WriteLine);

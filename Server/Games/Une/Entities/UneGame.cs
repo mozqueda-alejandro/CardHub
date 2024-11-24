@@ -3,51 +3,29 @@ using CardHub.Games.Une.Card;
 
 namespace CardHub.Games.Une.Entities;
 
+public enum GameState
+{
+    End,
+    PickColor,
+    PickPlayer,
+    Playable,
+    Start
+}
+
 public class UneGame
 {
     private Deck<UneCard> _deck;
     private UneOrder<UnePlayer> _order;
     private int _toDraw;
+    
+    private GameState _state = GameState.Start;
+    private bool _sayUneResolved = false;
 
-    public UneGame(UnePlayer[] players)
+    public UneGame(UnePlayer[] players, List<UneCard> deck)
     {
-        _deck = new Deck<UneCard>();
+        _deck = new Deck<UneCard>(deck);
         _order = new UneOrder<UnePlayer>(players);
         _toDraw = 0;
-
-        var id = 0;
-
-        var redReverse = new UneCardBuilder(id, UneAction.Reverse)
-            .SetColor(UneColor.Red)
-            .Build(out id);
-        _deck.Add(redReverse);
-        Console.WriteLine(redReverse);
-
-        var allStandards = new UneCardBuilder(id)
-            .SetStandardColors()
-            .SetNumbers(1, 10)
-            .BuildRange(out id);
-        _deck.AddRange(allStandards);
-        allStandards.ForEach(Console.WriteLine);
-
-        var block = new UneCardBuilder(id, UneAction.Block)
-            .BuildRange(out id);
-        _deck.AddRange(block);
-        block.ForEach(Console.WriteLine);
-        
-        var wildR4 = new UneCardBuilder(id, UneAction.ReverseDraw)
-            .SetDrawValue(4)
-            .Build(out id);
-        _deck.Add(wildR4);
-        Console.WriteLine(wildR4);
-        
-        var wild4 = new UneCardBuilder(id, UneAction.Draw)
-            .SetDrawValue(4)
-            .SetStandardColors()
-            .BuildRange(out id);
-        _deck.AddRange(wild4);
-        wild4.ForEach(Console.WriteLine);
-        
         
     }
 
@@ -73,6 +51,8 @@ public class UneGame
 
             break;
         }
+        
+        _state = GameState.Playable;
     }
 
     public async Task TurnExpired()
@@ -80,6 +60,8 @@ public class UneGame
         var toDraw = _deck.Draw(2);
         _order.Current.AddRange(toDraw);
         _order.Iterate();
+        
+        _state = GameState.Playable;
     }
 
     public async Task EndGame(string winner = "")
@@ -89,6 +71,7 @@ public class UneGame
 
     public async Task<bool> PlayCard(string playerName, int cardId)
     {
+        // TODO: Jump in functionality
         var player = _order.Find(playerName);
         if (player == null) return false;
         if (!player.Equals(_order.Current)) return false;
@@ -96,20 +79,40 @@ public class UneGame
         var card = player.Get(cardId);
         if (card == null) return false;
         if (!await IsPlayable(card)) return false;
-
+        
+        // TODO: Stacking functionality
+        if (card.IsDrawable)
+        {
+            _toDraw += card.DrawAmount;
+        }
+        
         player.Play(cardId);
         _deck.Discard(card);
-
-        if (player.Count != 0)
+        
+        if (player.Count == 0)
         {
-            _order.Iterate();
-        }
-        else
-        {
+            _state = GameState.End;
             await EndGame(playerName);
+            return true;
         }
-
+        
+        
+        
         return true;
+    }
+
+    public async Task SayUne(string name)
+    {
+        if (_sayUneResolved) return;
+        
+        var player = _order.Find(name);
+        if (player == null) return;
+        
+        var lastPlayer = _order.GetOffset(-1);
+        if (player.Equals(lastPlayer)) return; // TODO: Add feedback for last player and/or SayUne player
+
+        var toDraw = _deck.Draw(2);
+        lastPlayer.AddRange(toDraw);
     }
 
     public async Task<UneStatePlayer> GetStatePlayer(string name)
@@ -120,6 +123,11 @@ public class UneGame
         var state = new UneStatePlayer { Hand = player.Hand.ToList() };
 
         return state;
+    }
+
+    public async Task<UneStateGB> GetStateGB()
+    {
+        return new UneStateGB();
     }
 
     private async Task<bool> IsPlayable(UneCard card)

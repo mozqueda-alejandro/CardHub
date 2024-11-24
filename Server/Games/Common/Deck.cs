@@ -24,7 +24,7 @@ public class Deck<TCard> : IDeck<TCard> where TCard : class
 
     public void Shuffle()
     {
-        _cards = _cards.OrderBy(x => Random.Shared.Next()).ToList();
+        _cards = _cards.OrderBy(_ => Random.Shared.Next()).ToList();
     }
 
     public TCard? Draw()

@@ -11,43 +11,48 @@ public enum UneColor
     Black
 }
 
-public class UneCard : ICard
+public record UneCard : ICard
 {
     public int Id { get; init; }
-    public int DrawValue { get; init; }
-    public int? Number { get; init; }
     public UneColor Color { get; }
-    public UneAction Action { get; }
-    
-    public UneCard(int id, UneAction action, UneColor color, int? value = null)
+    public UneAction? Action { get; }
+    public int? Number { get; }
+    public int DrawAmount { get; }
+    public int Points { get; }
+
+    public UneCard(int Id, UneColor Color, UneAction? Action = default, int? Number = null, int DrawAmount = 0)
     {
-        Id = id;
-        Color = color;
-        Action = action;
-
-        if (!value.HasValue) return;
-
-        if (action.IsDrawable)
-        {
-            DrawValue = value.Value;
-        }
-        else
-        {
-            Number = value.Value;
-        }
+        this.Id = Id;
+        this.Color = Color;
+        this.Action = Action;
+        this.Number = Number;
+        this.DrawAmount = DrawAmount;
+        Points = CalculatePoints();
     }
-    
-    public bool IsDrawable => Action.IsDrawable;
+
+    public bool IsDrawable => DrawAmount > 0;
 
     public override string ToString()
     {
-        var colorStr = Color == UneColor.Black ? "Wild" : Color.ToString();
-        var isActionNone = Action.Name == UneAction.None.Name;
+        var color = Color == UneColor.Black ? "Wild" : Color.ToString();
         
-        string cardStr;
-        var value = IsDrawable ? DrawValue : Number;
-        if (isActionNone) cardStr = $"[{Id}] {colorStr} {value}";
-        else cardStr = $"[{Id}] {colorStr} {Action.Name} {value}";
-        return cardStr;
+        var action = Action != null ? Action.Name : string.Empty;
+        if (action.Length > 0) action += " ";
+        
+        var symbol = IsDrawable ? "+" : "";
+        
+        var quantifier = IsDrawable ? DrawAmount.ToString() : Number.ToString() ?? string.Empty;
+        if (quantifier.Length > 0) quantifier += " ";
+
+        var cardName = $"[{Id}] {color} {action}{symbol}{quantifier}({Points}pts)";
+        return cardName;
+    }
+
+    public int CompareDrawable(UneCard other) => DrawAmount.CompareTo(other.DrawAmount);
+
+    private int CalculatePoints()
+    {
+        if (Number != null) return Number.Value;
+        return Color != UneColor.Black ? 20 : 50;
     }
 }

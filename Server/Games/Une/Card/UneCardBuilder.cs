@@ -1,144 +1,189 @@
-﻿namespace CardHub.Games.Une.Card;
+﻿using System.Collections;
+
+namespace CardHub.Games.Une.Card;
 
 public class UneCardBuilder
 {
-    private UneAction _action;
-    private List<UneColor> _colors = [];
-    private List<int> _numbers = [];
-    private List<int> _drawValues = [];
-    private int _startId;
+    private int _id;
+    private UneAction? _action;
+    private HashSet<UneColor> _colors = [];
+    private HashSet<int> _numbers = [];
+    private HashSet<int> _drawAmounts = [];
+    private HashSet<UneCard> _cards;
 
-    public UneCardBuilder(int id, UneAction? action = null)
+    private Dictionary<int, int> _cardFrequencies = [];
+
+    public UneCardBuilder(IEqualityComparer<UneCard> comparer)
     {
-        _startId = id;
-        _action = action ?? UneAction.None;
-
-        var isWild = _action.IsWild;
-        if (isWild.HasValue && isWild.Value) _colors.Add(UneColor.Black);
+        _cards = new HashSet<UneCard>(comparer);
     }
 
-    #region ColorSet
+    private static List<UneColor> _standardColors = [UneColor.Blue, UneColor.Green, UneColor.Red, UneColor.Yellow];
 
-    public UneCardBuilder SetStandardColors()
+    public UneCardBuilder SetAction(UneAction action)
     {
-        List<UneColor> standardColors = [UneColor.Blue, UneColor.Green, UneColor.Red, UneColor.Yellow];
-        return SetColors(standardColors);
+        if (_action != null) throw new InvalidOperationException("Action is already set");
+
+        _action = action;
+        return this;
     }
-    public UneCardBuilder SetWildColor()
-    {
-        var onlyBlackAdded = _colors.All(color => color == UneColor.Black);
-        
-        var standardColorAdded = _colors.Any(c => c != UneColor.Black);
-        if (standardColorAdded) throw new InvalidOperationException("Colors already added");
-        
-        return SetColor(UneColor.Black);
-    }
+
+    #region Color
+
+    public UneCardBuilder SetStandardColors() => SetColors(_standardColors);
+    public UneCardBuilder SetWildColor() => SetColor(UneColor.Black);
     public UneCardBuilder SetColor(UneColor color) => SetColors([color]);
     public UneCardBuilder SetColors(List<UneColor> colors)
     {
-        if (_colors.Count != 0) throw new InvalidOperationException("Action is wild, color must be black");
-        if (_colors.Count > 0 && _colors.Contains(UneColor.Black))
-            throw new InvalidOperationException("Wild/nonwild cards cannot be created together");
-
-        _colors.AddRange(colors);
+        colors.ForEach(color => _colors.Add(color));
         return this;
     }
 
     #endregion
 
-    #region NumberSet
+    #region Number
 
     public UneCardBuilder SetNumber(int number) => SetNumbers([number]);
-    public UneCardBuilder SetNumbers(int start, int end, List<int>? excludedNumbers = null)
-    {
-        if (end < start) throw new ArgumentException("End value must be greater than or equal to start value.");
 
-        var count = end - start + 1;
-        var numbers = Enumerable.Range(start, count).ToList();
+    /// <param name="start">An integer number specifying at which position to start.</param>
+    /// <param name="stop">An integer number specifying at which position to stop (not included).</param>
+    /// <param name="excludedNumbers">Optional. A list of integers to be excluded.</param>
+    public UneCardBuilder SetNumbers(int start, int stop, List<int>? excludedNumbers = null)
+    {
+        if (stop < start) throw new ArgumentException("Stop number must be >= to start number.");
+
+        var count = stop - start;
+        var numbers = Enumerable.Range(start, count);
 
         if (excludedNumbers != null)
         {
-            numbers = numbers.Except(excludedNumbers).ToList();
+            numbers = numbers.Except(excludedNumbers);
         }
 
-        return SetNumbers(numbers);
+        return SetNumbers(numbers.ToList());
     }
     public UneCardBuilder SetNumbers(List<int> numbers)
     {
-        if (_drawValues.Count != 0) throw new InvalidOperationException("Draw value(s) already initialized");
-
-        var isWild = _action.IsWild;
-        if (isWild.HasValue && isWild.Value) throw new InvalidOperationException("Action cards cannot have a number");
-
-        _numbers.AddRange(numbers);
+        numbers.ForEach(number => _numbers.Add(number));
         return this;
     }
 
     #endregion
 
-    #region DrawValueSet
+    #region DrawAmount
 
-    public UneCardBuilder SetDrawValue(int drawValue) => SetDrawValues([drawValue]);
+    public UneCardBuilder SetDrawAmount(int drawAmount) => SetDrawAmounts([drawAmount]);
 
-    public UneCardBuilder SetDrawValues(List<int> drawValues)
+    public UneCardBuilder SetDrawAmounts(List<int> drawAmounts)
     {
-        if (_numbers.Count != 0) throw new InvalidOperationException("Number(s) already initialized");
-
-        _drawValues.AddRange(drawValues);
+        drawAmounts.ForEach(amount => _drawAmounts.Add(amount));
         return this;
     }
 
     #endregion
 
-    public UneCard Build(out int nextId)
+    public void AddCards(int frequency = 1)
     {
+        ConfigureDefaults();
         Validate();
 
-        int? value = null;
-        if (_numbers.Count > 0) value = _numbers[0];
-        else if (_drawValues.Count > 0) value = _drawValues[0];
+        List<UneCard> toAdd = [];
 
-        var color = _colors[0];
-        var toBuild = new UneCard(_startId++, _action, color, value);
-        nextId = _startId;
-        return toBuild;
-    }
-
-    public List<UneCard> BuildRange(out int nextId)
-    {
-        Validate();
-
-        var values = new List<int>();
-        if (_numbers.Count > 0) values = _numbers;
-        else if (_drawValues.Count > 0) values = _drawValues;
-
-        var toBuild = new List<UneCard>();
         foreach (var color in _colors)
         {
-            if (values.Count > 0)
+            if (NumbersSet)
             {
-                var toAdd = values.Select(value => new UneCard(_startId++, _action, color, value));
-                toBuild.AddRange(toAdd);
+                toAdd = _numbers.Select(number =>
+                {
+                    if (!_cardFrequencies.TryAdd(_id, frequency))
+                        throw new InvalidOperationException($"Id {_id} frequency already set");
+
+                    return new UneCard(_id++, color, _action, Number: number);
+                }).ToList();
+            }
+            else if (DrawAmountsSet)
+            {
+                toAdd = _drawAmounts.Select(amount =>
+                {
+                    if (!_cardFrequencies.TryAdd(_id, frequency))
+                        throw new InvalidOperationException($"Id {_id} frequency already set");
+
+                    return new UneCard(_id++, color, _action, DrawAmount: amount);
+                }).ToList();
             }
             else
             {
-                toBuild.Add(new UneCard(_startId++, _action, color));
+                toAdd = [new UneCard(_id++, color, _action)];
             }
+
+            toAdd.ForEach(card => _cards.Add(card));
         }
 
-        nextId = _startId;
-        return toBuild;
+        Reset();
     }
+
+    private void ConfigureDefaults()
+    {
+        if (ColorsSet) return;
+        
+        if (_action == null)
+        {
+            SetColors(_standardColors);
+            return;
+        }
+
+        if (_action.IsWild) SetWildColor();
+        else SetColors(_standardColors);
+    }
+
+    public List<UneCard> Build() => _cards.ToList();
 
     private void Validate()
     {
-        if (_colors.Count == 0)
-            throw new InvalidOperationException("Color must be provided");
-        if (_drawValues.Count == 0 && _action.IsDrawable)
-            throw new InvalidOperationException("Draw value must be provided for drawable action");
-        if (_drawValues.Count > 0 && _numbers.Count > 0)
-            throw new InvalidOperationException("Numbers and draw values cannot be both set");
-        if (_action == UneAction.None && _numbers.Count == 0)
-            throw new InvalidOperationException("Number(s) must be provided for standard card");
+        if (!ColorsSet)
+            throw new InvalidOperationException("Must have Color");
+
+        if (DrawAmountsSet && NumbersSet)
+            throw new InvalidOperationException("Can either have Number or DrawAmount set");
+
+        var containsNegative = _drawAmounts.Any(amount => amount < 0);
+        if (containsNegative) throw new ArgumentException("DrawAmount cannot be negative");
+
+        if (_action == null) return;
+
+        #region ActionProcessing
+
+        if (_action.IsDrawable != DrawAmountsSet)
+        {
+            var error = _action.IsDrawable
+                ? "Drawable action card must have DrawAmount set"
+                : "Non-drawable card has DrawAmount set";
+            throw new InvalidOperationException(error);
+        }
+
+        if (_action.IsWild && NumbersSet)
+            throw new InvalidOperationException("Wild card cannot have a Number");
+
+        var containsNonWild = _colors.Any(color => color != UneColor.Black);
+        if (_action.IsWild && containsNonWild)
+            throw new ArgumentException("Wild card cannot have standard colors");
+
+        var containsWild = _colors.Contains(UneColor.Black);
+        if (!_action.IsWild && containsWild)
+            throw new ArgumentException("Non-wild card cannot have Black color");
+
+        #endregion
+    }
+
+    private bool ColorsSet => _colors.Count > 0;
+    private bool NumbersSet => _numbers.Count > 0;
+    private bool DrawAmountsSet => _drawAmounts.Count > 0;
+
+    private void Reset()
+    {
+        _action = null;
+        _colors.Clear();
+        _numbers.Clear();
+        _drawAmounts.Clear();
     }
 }

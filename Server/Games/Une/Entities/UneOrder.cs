@@ -21,11 +21,12 @@ public class UneOrder<TPlayer> : IUneOrder<TPlayer>, IEnumerable where TPlayer :
     {
         var playerArray = players.ToArray();
         if (playerArray.Length > MaxCapacity) throw new ArgumentException("Too many players");
-        if (playerArray.Length < 2) throw new ArgumentException("Too few players");
+        if (playerArray.Length <= 1) throw new ArgumentException("Too few players");
+        if (playerArray.Select(p => p.Name).Distinct().Count() != playerArray.Length)
+            throw new ArgumentException("Player IDs must be unique");
 
         _players = playerArray.ToDictionary(p => p.Name);
         _names = playerArray.Select(p => p.Name).ToList();
-        _currentIndex = 0;
     }
 
     public int Count() => _players.Count;

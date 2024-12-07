@@ -8,4 +8,5 @@ public interface IBaseClient
     // Task Resumed();
     Task Kicked();
     Task Pong();
+    Task BasePong();
 }

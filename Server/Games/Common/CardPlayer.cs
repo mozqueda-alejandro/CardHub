@@ -38,7 +38,7 @@ public class CardPlayer<TCard> : IPlayer where TCard : ICard
         return Hand.Find(c => c.Id == cardId);
     }
 
-    public TCard[] GetAll(int[] cardIds)
+    public TCard[] Select(int[] cardIds)
     {
         var toGetIds = new HashSet<int>(cardIds);
         var toGet = Hand.Where(c => toGetIds.Contains(c.Id)).ToArray();

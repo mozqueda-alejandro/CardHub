@@ -1,46 +1,56 @@
 using System.Collections.Concurrent;
+using CardHub.Games.Common;
 using CardHub.Games.Une;
 using CardHub.Games.Une.Card;
 using CardHub.Games.Une.Entities;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 
-// builder.Services.AddControllers();
-// builder.Services.AddEndpointsApiExplorer();
-// builder.Services.AddSwaggerGen();
-//
-// builder.Services.AddSignalR(hubOptions =>
-// {
-//     if (builder.Environment.IsDevelopment())
-//     {
-//         hubOptions.EnableDetailedErrors = true;
-//     }
-// });
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("DevelopmentPolicy", policyBuilder =>
-//     {
-//         policyBuilder.AllowAnyMethod()
-//             .AllowAnyHeader()
-//             .WithOrigins("http://localhost:3000")
-//             .AllowCredentials();
-//     });
-//     options.AddPolicy("ProductionPolicy", policyBuilder =>
-//     {
-//         policyBuilder.AllowAnyMethod()
-//             .AllowAnyHeader()
-//             .WithOrigins("https://playcardhub.vercel.app", "https://playcardhub.com")
-//             .AllowCredentials();
-//     });
-// });
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddSignalR(hubOptions =>
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        hubOptions.EnableDetailedErrors = true;
+    }
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevelopmentPolicy", policyBuilder =>
+    {
+        policyBuilder.AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithOrigins("http://localhost:3000")
+            .AllowCredentials();
+    });
+    options.AddPolicy("ProductionPolicy", policyBuilder =>
+    {
+        policyBuilder.AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithOrigins("https://playcardhub.vercel.app", "https://playcardhub.com")
+            .AllowCredentials();
+    });
+});
 
 
 #region DI
 
-// builder.Services.AddSingleton<IDictionary<string, UneGame>>(_ => new ConcurrentDictionary<string, UneGame>());
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+builder.Services.AddSingleton(typeof(BaseHub<>));
+builder.Services.AddSingleton(typeof(BaseHubFactory<>));
+builder.Services.AddSingleton<IDictionary<string, IGame>>(new ConcurrentDictionary<string, IGame>());
 builder.Services.AddSingleton<IDictionary<int, UneCard>>(new Dictionary<int, UneCard>());
 builder.Services.AddSingleton<IEqualityComparer<UneCard>, UneCardEqualityComparer>();
 builder.Services.AddSingleton<UneCardBuilder>();
@@ -54,73 +64,100 @@ builder.Services.AddSingleton<Func<UneGame>>(x => () => x.GetService<UneGame>()!
 
 var app = builder.Build();
 
-// app.UseHttpsRedirection();
-//
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-//     app.UseCors("DevelopmentPolicy");
-// }
-// else
-// {
-//     app.UseCors("ProductionPolicy");
-// }
-//
-// app.UseAuthorization();
-// app.MapControllers();
-//
-// app.MapHub<UneHub>("/unehub", options =>
-// {
-//     options.AllowStatefulReconnects = true;
-// });
+app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    app.UseCors("DevelopmentPolicy");
+}
+else
+{
+    app.UseCors("ProductionPolicy");
+}
+
+app.UseAuthorization();
+app.MapControllers();
+
+app.MapHub<UneHub>("/unehub", options =>
+{
+    options.AllowStatefulReconnects = false;
+});
 
 
 using var scope = app.Services.CreateScope(); // Create a scoped DI context
 var uneBuilder = scope.ServiceProvider.GetRequiredService<UneCardBuilder>();
 var uneFactory = scope.ServiceProvider.GetRequiredService<UneGameFactory>();
 
-uneBuilder.SetNumber(0).AddCards();
-uneBuilder.SetNumbers(1, 10).AddCards(2);
-uneBuilder.SetDrawAmount(2).AddCards(2);
-uneBuilder.SetAction(UneAction.Reverse).AddCards(2);
-uneBuilder.SetAction(UneAction.Skip).AddCards(2);
-uneBuilder.SetWildColor().AddCards();
-uneBuilder.SetWildColor().SetDrawAmount(4).AddCards();
-
-// No Mercy Cards
-uneBuilder.SetAction(UneAction.DiscardColor).AddCards();
-uneBuilder.SetAction(UneAction.SkipAll).AddCards();
-uneBuilder.SetAction(UneAction.ReverseDraw).SetDrawAmount(4).AddCards();
-uneBuilder.SetWildColor().SetDrawAmount(6).AddCards();
-uneBuilder.SetWildColor().SetDrawAmount(10).AddCards();
-uneBuilder.SetAction(UneAction.ColorRoulette).AddCards();
+uneBuilder.Colors([UneColor.Blue, UneColor.Red]).Number(0).AddCards();
+uneBuilder.Colors([UneColor.Blue, UneColor.Red]).NumberRange(1, 10).AddCards(2);
+// uneBuilder.DrawAmount(2).AddCards(2);
+// uneBuilder.Action(UneAction.Reverse).AddCards(2);
+// uneBuilder.Action(UneAction.Skip).AddCards(2);
+// uneBuilder.WildColor().AddCards();
+// uneBuilder.WildColor().DrawAmount(4).AddCards();
+//
+// // No Mercy Cards
+// uneBuilder.Action(UneAction.DiscardColor).AddCards();
+// uneBuilder.Action(UneAction.SkipAll).AddCards();
+// uneBuilder.Action(UneAction.ReverseDraw).DrawAmount(4).AddCards();
+// uneBuilder.WildColor().DrawAmount(6).AddCards();
+// uneBuilder.WildColor().DrawAmount(10).AddCards();
+// uneBuilder.Action(UneAction.ColorRoulette).AddCards();
 
 var uneCards = uneBuilder.Build();
-uneCards.ForEach(Console.WriteLine);
+// var cardSet = scope.ServiceProvider.GetRequiredService<IDictionary<int, UneCard>>();
 
 var rubi = new UnePlayer("Rubi");
 var lyssie = new UnePlayer("Lyssie");
 var alex = new UnePlayer("Alex");
 
-var players = new List<UnePlayer>{ rubi, lyssie, alex };
-var game = uneFactory.Create(players);
+var players = new List<UnePlayer> { rubi, lyssie, alex };
+var settings = new UneSettings
+{
+    ForcePlay = false,
+    FreeDraw = false,
+    JumpIn = false,
+    Mercy = false,
+    SevensSwap = false,
+    UneStackRule = UneStackRule.None,
+    ZerosPass = false
+};
+var game = uneFactory.Create(players, settings);
 Console.WriteLine("Une Game created");
 
-await game.StartGame();
-Console.WriteLine("Une Game created");
+await game.Start();
+Console.WriteLine("Une Game started");
 
-Console.WriteLine("Your cards: ");
-var myState = await game.GetStatePlayer("Alex");
-myState.Hand.ForEach(Console.WriteLine);
+var moveMade = true; // hack to print initial state
+while (false)
+{
+    var stateGB = await game.GetStateGB();
+    var currentPlayer = stateGB.CurrentPlayer;
+    var statePlayer = await game.GetStatePlayer(currentPlayer);
+    
+    if (moveMade)
+    {
+        Console.WriteLine($"\nCurrent Player: {currentPlayer}");
+        statePlayer.Hand.ForEach(Console.WriteLine);
+        Console.WriteLine($"Current Card: {stateGB.DiscardPile.Last()}");
+    }
 
-var input = Console.ReadLine();
-if (input is null) return;
-var cardId = int.Parse(input);
-var played = await game.PlayCard("Alex", cardId);
+    Console.Write("IN:");
 
-Console.WriteLine("Card" + uneCards.Find(card => card.Id == cardId) + " -> " + played);
+    var input = Console.ReadLine();
+    if (input is null) continue;
+
+    var cardId = int.Parse(input);
+    moveMade = await game.PlayCard(currentPlayer, cardId);
+
+    Console.WriteLine("Card" + uneCards.Find(card => card.Id == cardId) + " -> " + moveMade);
+}
+
 
 
 app.Run();

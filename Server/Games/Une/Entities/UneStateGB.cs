@@ -4,8 +4,9 @@ namespace CardHub.Games.Une.Entities;
 
 public class UneStateGB
 {
+    public string CurrentPlayer { get; set; }
     public List<UneCard> DiscardPile { get; set; }
-    public List<UnePlayer> Players { get; set; }
+    public Dictionary<string, List<UneCard>> PlayerHands { get; set; }
 }
 
 /*

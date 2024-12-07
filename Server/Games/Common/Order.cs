@@ -1,7 +1,6 @@
 ﻿using System.Collections;
-using CardHub.Games.Common;
 
-namespace CardHub.Games.Une.Entities;
+namespace CardHub.Games.Common;
 
 public enum Direction
 {
@@ -9,7 +8,7 @@ public enum Direction
     Backward
 }
 
-public class UneOrder<TPlayer> : IUneOrder<TPlayer>, IEnumerable where TPlayer : IPlayer
+public class Order<TPlayer> : IEnumerable where TPlayer : IPlayer
 {
     private List<string> _names;
     private Dictionary<string, TPlayer> _players;
@@ -17,7 +16,7 @@ public class UneOrder<TPlayer> : IUneOrder<TPlayer>, IEnumerable where TPlayer :
     private Direction _direction = Direction.Forward;
     private const int MaxCapacity = 8;
 
-    public UneOrder(IEnumerable<TPlayer> players)
+    public Order(IEnumerable<TPlayer> players)
     {
         var playerArray = players.ToArray();
         if (playerArray.Length > MaxCapacity) throw new ArgumentException("Too many players");
@@ -29,7 +28,7 @@ public class UneOrder<TPlayer> : IUneOrder<TPlayer>, IEnumerable where TPlayer :
         _names = playerArray.Select(p => p.Name).ToList();
     }
 
-    public int Count() => _players.Count;
+    public int Count => _players.Count;
 
     public TPlayer Current => _players[_names[_currentIndex]];
 
@@ -103,8 +102,8 @@ public class UneOrder<TPlayer> : IUneOrder<TPlayer>, IEnumerable where TPlayer :
     {
         return _direction switch
         {
-            Direction.Forward => (_currentIndex + offset) % Count(),
-            Direction.Backward => (_currentIndex - offset) % Count(),
+            Direction.Forward => (_currentIndex + offset) % Count,
+            Direction.Backward => (_currentIndex - offset) % Count,
             _ => throw new ArgumentOutOfRangeException()
         };
     }

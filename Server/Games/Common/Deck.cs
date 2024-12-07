@@ -5,7 +5,7 @@ namespace CardHub.Games.Common;
 public class Deck<TCard> : IDeck<TCard> where TCard : ICard
 {
     private List<TCard> _cards = [];
-    private readonly List<TCard> _discardPile = [];
+    public List<TCard> DiscardPile { get; } = [];
 
     public Deck() { }
 
@@ -33,7 +33,7 @@ public class Deck<TCard> : IDeck<TCard> where TCard : ICard
     {
         if (Count == 0)
         {
-            if (_discardPile.Count == 0)
+            if (DiscardPile.Count == 0)
             {
                 Console.WriteLine("No cards to draw from the deck.");
                 return default;
@@ -51,7 +51,7 @@ public class Deck<TCard> : IDeck<TCard> where TCard : ICard
     {
         if (toDraw < 1) throw new ArgumentException("Attempted to draw less than 1 card from the deck.");
 
-        var totalDrawable = Count + _discardPile.Count;
+        var totalDrawable = Count + DiscardPile.Count;
         if (toDraw > totalDrawable)
         {
             Console.WriteLine($"Attempted to draw {toDraw} cards, but only {_cards.Count} card(s) can be drawn.");
@@ -78,22 +78,22 @@ public class Deck<TCard> : IDeck<TCard> where TCard : ICard
 
     public void Discard(TCard card)
     {
-        _discardPile.Add(card);
+        DiscardPile.Add(card);
     }
 
     public void Discard(IEnumerable<TCard> cards)
     {
-        _discardPile.AddRange(cards);
+        DiscardPile.AddRange(cards);
     }
 
-    public TCard? Current => _discardPile.Last();
+    public TCard? Current => DiscardPile.Last();
 
     public int Count => _cards.Count;
 
     private void ReclaimCards()
     {
-        _cards.AddRange(_discardPile.GetRange(0, _discardPile.Count - 1));
-        _discardPile.RemoveRange(0, _discardPile.Count - 1);
+        _cards.AddRange(DiscardPile.GetRange(0, DiscardPile.Count - 1));
+        DiscardPile.RemoveRange(0, DiscardPile.Count - 1);
         Shuffle();
     }
 }

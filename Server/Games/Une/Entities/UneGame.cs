@@ -16,10 +16,12 @@ public enum GameState
 public class UneGame : IGame
 {
     private readonly IDictionary<int, UneCard> _cardSet;
-
-    private UneSettings _settings;
+    
+    public Guid Id { get; }
+    public event EventHandler<UneEventArgs> OnUneEvent;
+    public UneRules Rules { get; private set; }
     private UneDeckFactory _deckFactory;
-    private Deck<UneCard> _deck;
+    private Deck<UneCard> _deck = [];
     private Order<UnePlayer> _order;
     private int _toDraw;
 
@@ -34,14 +36,14 @@ public class UneGame : IGame
     {
         _cardSet = cardSet;
         _deckFactory = deckFactory;
-        _deck = new Deck<UneCard>();
     }
 
-    public void Init(List<UnePlayer> players, UneSettings settings)
+    public void Initialize(List<UnePlayer> players, UneRules rules)
     {
         if (!IsState(GameState.Init)) return;
+        
 
-        _settings = settings;
+        Rules = rules;
         _order = new Order<UnePlayer>(players);
 
         _state = GameState.Start;
@@ -74,6 +76,7 @@ public class UneGame : IGame
         }
 
         _state = GameState.Playable;
+        OnUneEvent.Invoke(this, new UneEventArgs());
     }
 
     public async Task TurnExpired()

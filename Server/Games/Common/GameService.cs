@@ -37,13 +37,13 @@ public class GameService<TGame>(
             return false;
         }
         
-        if (baseGame is not TGame specificGame)
+        if (baseGame is not TGame)
         {
             Console.WriteLine("TryGetGame - Found game, but it is not of type TGame");
             return false;
         }
 
-        game = specificGame;
+        game = baseGame;
         return true;
     }
 }

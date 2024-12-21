@@ -8,9 +8,10 @@ public class BaseHub<THub>(
     IServiceProvider serviceProvider) : IBaseHub
     where THub : Hub<IBaseClient>
 {
-    public async Task TryJoinGame<TGame>()
+    public async Task<bool> TryJoinGame()
     {
         
+        return false;
     }
     
     public async Task SendAvatarsToGroup(string[] avatars)
@@ -31,6 +32,11 @@ public class BaseHub<THub>(
     public async Task SendMessage(string connectionId, Message message)
     {
         await hubContext.Clients.Client(connectionId).ReceiveMessage(message);
+    }
+
+    public async Task RestartGame()
+    {
+        
     }
 
     public async Task BasePing()

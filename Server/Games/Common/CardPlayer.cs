@@ -1,14 +1,28 @@
-﻿namespace CardHub.Games.Common;
+﻿using CardHub.Games.Une.Card;
 
-public class CardPlayer<TCard> : IPlayer where TCard : ICard
+namespace CardHub.Games.Common;
+
+public class CardEqualityComparer<TCard> : IEqualityComparer<TCard>
+{
+    public bool Equals(TCard? x, TCard? y)
+    {
+        if (x is null || y is null) return false;
+
+        return false;
+    }
+    
+    public int GetHashCode(TCard obj) => obj.GetHashCode();
+}
+
+public class CardPlayer<TCard> : IPlayer
 {
     public string Name { get; init; }
-    public List<TCard> Hand { get; }  
+    public List<TCard> Hand { get; } = [];
+    private IEqualityComparer<TCard> _comparer;
     
     protected CardPlayer(string name)
     {
         Name = name;
-        Hand = [];
     }
     
     protected CardPlayer(string name, IEnumerable<TCard> cards)
@@ -19,7 +33,7 @@ public class CardPlayer<TCard> : IPlayer where TCard : ICard
     
     public bool Add(TCard card)
     {
-        if (Hand.Any(c => c.Id == card.Id)) return false;
+        if (Hand.Any(c => _comparer.Equals(card, c))) return false;
         
         Hand.Add(card);
         return true;
@@ -27,7 +41,7 @@ public class CardPlayer<TCard> : IPlayer where TCard : ICard
     
     public bool AddRange(IEnumerable<TCard> cards)
     {
-        if (Hand.Any(c => cards.Any(toAdd => toAdd.Id == c.Id))) return false;
+        if (Hand.Any(c => cards.Any(toAdd => _comparer.Equals(toAdd, c)))) return false;
         
         Hand.AddRange(cards);
         return true;
@@ -35,36 +49,40 @@ public class CardPlayer<TCard> : IPlayer where TCard : ICard
     
     public TCard? Get(int cardId)
     {
-        return Hand.Find(c => c.Id == cardId);
+        // return Hand.Find(c => c.Id == cardId);
+        return Hand.Find(c => true);
     }
 
-    public TCard[] Select(int[] cardIds)
+    public List<TCard> Select(List<int> cardIds)
     {
         var toGetIds = new HashSet<int>(cardIds);
-        var toGet = Hand.Where(c => toGetIds.Contains(c.Id)).ToArray();
-        if (toGet.Length != cardIds.Length) return [];
+        // var toGet = Hand.Where(c => toGetIds.Contains(c.Id)).ToList();
+        var toGet = Hand.Where(c => toGetIds.Contains(default)).ToList();
+        if (toGet.Count != cardIds.Count) return [];
         
         return toGet;
     }
 
     public bool Play(int cardId)
     {
-        var toRemove = Hand.FirstOrDefault(c => c.Id == cardId);
+        // var toRemove = Hand.FirstOrDefault(c => c.Id == cardId);
+        var toRemove = Hand.FirstOrDefault(c => true);
         if (toRemove == null) return false;
 
         Hand.Remove(toRemove);
         return true;
     }
 
-    public bool Play(int[] cardIds)
+    public bool Play(List<int> cardIds)
     {
-        if (cardIds.Length == 0) return false;
+        if (cardIds.Count == 0) return false;
 
         var toRemoveIds = new HashSet<int>(cardIds);
-        var toRemove = Hand.Where(c => toRemoveIds.Contains(c.Id)).ToArray();
-        if (toRemove.Length != cardIds.Length) return false;
+        // var toRemove = Hand.Where(c => toRemoveIds.Contains(c.Id)).ToArray();
+        var toRemove = Hand.Where(c => toRemoveIds.Contains(default)).ToArray();
+        if (toRemove.Length != cardIds.Count) return false;
 
-        Hand.RemoveAll(c => toRemoveIds.Contains(c.Id));
+        // Hand.RemoveAll(c => toRemoveIds.Contains(c.Id));
         return true;
     }
 
@@ -74,9 +92,7 @@ public class CardPlayer<TCard> : IPlayer where TCard : ICard
         
         var random = new Random();
         var index = random.Next(0, Hand.Count);
-        var card = Hand[index];
-        Hand.RemoveAt(index);
-        return card;
+        return Hand[index];
     }
     
     public void Clear() => Hand.Clear();

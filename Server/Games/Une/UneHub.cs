@@ -15,8 +15,13 @@ public class UneHub : Hub<IBaseClient>, IBaseHub
         _gameService = gameService;
     }
 
-    public Task StartGame()
+    public Task<bool> StartGame()
     {
+        // var game = service.GetGame()
+        // if (!game.CanStart()) return false;
+        
+        // game.Start();
+        
         throw new NotImplementedException();
     }
 
@@ -40,21 +45,19 @@ public class UneHub : Hub<IBaseClient>, IBaseHub
         throw new NotImplementedException();
     }
 
-    public Task RestartGame()
+    public async Task RestartGame()
     {
-        throw new NotImplementedException();
+        await _base.RestartGame();
     }
 
     public async Task<bool> JoinGame(ClientConnection connection)
     {
-        if (!_gameService.TryGetGame(out var game, connection.RoomId))
-        {
-            // _base.RoomId = connection.RoomId;
-        }
-        
-        return false;
+        var joinSuccess = await _base.TryJoinGame();
+        return joinSuccess;
     }
-
+    
+    // public async Task Handle
+        
     public Task GetStateGB()
     {
         throw new NotImplementedException();

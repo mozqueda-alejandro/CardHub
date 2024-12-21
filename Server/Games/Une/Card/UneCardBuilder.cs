@@ -22,7 +22,7 @@ public class UneCardBuilder
 
     private static List<UneColor> _standardColors = [UneColor.Blue, UneColor.Green, UneColor.Red, UneColor.Yellow];
 
-    public UneCardBuilder Action(UneAction action)
+    public UneCardBuilder SetAction(UneAction action)
     {
         if (_action != null) throw new InvalidOperationException("Action is already set");
 
@@ -32,10 +32,10 @@ public class UneCardBuilder
 
     #region Color
 
-    public UneCardBuilder StandardColors() => Colors(_standardColors);
-    public UneCardBuilder WildColor() => Color(UneColor.Black);
-    public UneCardBuilder Color(UneColor color) => Colors([color]);
-    public UneCardBuilder Colors(List<UneColor> colors)
+    public UneCardBuilder SetStandardColors() => SetColors(_standardColors);
+    public UneCardBuilder SetWildColor() => SetColor(UneColor.Black);
+    public UneCardBuilder SetColor(UneColor color) => SetColors([color]);
+    public UneCardBuilder SetColors(List<UneColor> colors)
     {
         colors.ForEach(color => _colors.Add(color));
         return this;
@@ -45,12 +45,12 @@ public class UneCardBuilder
 
     #region Number
 
-    public UneCardBuilder Number(int number) => Numbers([number]);
+    public UneCardBuilder SetNumber(int number) => SetNumbers([number]);
 
     /// <param name="start">An integer number specifying at which position to start.</param>
     /// <param name="stop">An integer number specifying at which position to stop (not included).</param>
     /// <param name="exclude">Optional. A list of integers to be excluded.</param>
-    public UneCardBuilder NumberRange(int start, int stop, List<int>? exclude = null)
+    public UneCardBuilder SetNumberRange(int start, int stop, List<int>? exclude = null)
     {
         if (stop < start) throw new ArgumentException("Stop number must be >= to start number.");
 
@@ -62,9 +62,9 @@ public class UneCardBuilder
             numbers = numbers.Except(exclude);
         }
 
-        return Numbers(numbers.ToList());
+        return SetNumbers(numbers.ToList());
     }
-    public UneCardBuilder Numbers(List<int> numbers)
+    public UneCardBuilder SetNumbers(List<int> numbers)
     {
         numbers.ForEach(number => _numbers.Add(number));
         return this;
@@ -74,9 +74,9 @@ public class UneCardBuilder
 
     #region DrawAmount
 
-    public UneCardBuilder DrawAmount(int drawAmount) => DrawAmounts([drawAmount]);
+    public UneCardBuilder SetDrawAmount(int drawAmount) => SetDrawAmounts([drawAmount]);
 
-    public UneCardBuilder DrawAmounts(List<int> drawAmounts)
+    public UneCardBuilder SetDrawAmounts(List<int> drawAmounts)
     {
         drawAmounts.ForEach(amount => _drawAmounts.Add(amount));
         return this;
@@ -130,12 +130,12 @@ public class UneCardBuilder
         
         if (_action == null)
         {
-            Colors(_standardColors);
+            SetColors(_standardColors);
             return;
         }
 
-        if (_action.IsWild) WildColor();
-        else Colors(_standardColors);
+        if (_action.IsWild) SetWildColor();
+        else SetColors(_standardColors);
     }
 
     public List<UneCard> Build()

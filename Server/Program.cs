@@ -3,7 +3,6 @@ using CardHub.Games.Common;
 using CardHub.Games.Une;
 using CardHub.Games.Une.Card;
 using CardHub.Games.Une.Entities;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -14,7 +13,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSignalR(hubOptions =>
@@ -48,9 +46,12 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+
 builder.Services.AddSingleton(typeof(BaseHub<>));
 builder.Services.AddSingleton(typeof(BaseHubFactory<>));
 builder.Services.AddSingleton<IDictionary<string, IGame>>(new ConcurrentDictionary<string, IGame>());
+
+
 builder.Services.AddSingleton<IDictionary<int, UneCard>>(new Dictionary<int, UneCard>());
 builder.Services.AddSingleton<IEqualityComparer<UneCard>, UneCardEqualityComparer>();
 builder.Services.AddSingleton<UneCardBuilder>();
@@ -65,9 +66,6 @@ builder.Services.AddSingleton<Func<UneGame>>(x => () => x.GetService<UneGame>()!
 var app = builder.Build();
 
 app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -93,21 +91,21 @@ using var scope = app.Services.CreateScope(); // Create a scoped DI context
 var uneBuilder = scope.ServiceProvider.GetRequiredService<UneCardBuilder>();
 var uneFactory = scope.ServiceProvider.GetRequiredService<UneGameFactory>();
 
-uneBuilder.Colors([UneColor.Blue, UneColor.Red]).Number(0).AddCards();
-uneBuilder.Colors([UneColor.Blue, UneColor.Red]).NumberRange(1, 10).AddCards(2);
-// uneBuilder.DrawAmount(2).AddCards(2);
-// uneBuilder.Action(UneAction.Reverse).AddCards(2);
-// uneBuilder.Action(UneAction.Skip).AddCards(2);
-// uneBuilder.WildColor().AddCards();
-// uneBuilder.WildColor().DrawAmount(4).AddCards();
-//
-// // No Mercy Cards
-// uneBuilder.Action(UneAction.DiscardColor).AddCards();
-// uneBuilder.Action(UneAction.SkipAll).AddCards();
-// uneBuilder.Action(UneAction.ReverseDraw).DrawAmount(4).AddCards();
-// uneBuilder.WildColor().DrawAmount(6).AddCards();
-// uneBuilder.WildColor().DrawAmount(10).AddCards();
-// uneBuilder.Action(UneAction.ColorRoulette).AddCards();
+uneBuilder.SetColors([UneColor.Blue, UneColor.Red]).SetNumber(0).AddCards();
+uneBuilder.SetColors([UneColor.Blue, UneColor.Red]).SetNumberRange(1, 10).AddCards(2);
+uneBuilder.SetDrawAmount(2).AddCards(2);
+uneBuilder.SetAction(UneAction.Reverse).AddCards(2);
+uneBuilder.SetAction(UneAction.Skip).AddCards(2);
+uneBuilder.SetWildColor().AddCards(4);
+uneBuilder.SetWildColor().SetDrawAmount(4).AddCards(4);
+
+// No Mercy Cards
+uneBuilder.SetAction(UneAction.DiscardColor).AddCards();
+uneBuilder.SetAction(UneAction.SkipAll).AddCards();
+uneBuilder.SetAction(UneAction.ReverseDraw).SetDrawAmount(4).AddCards();
+uneBuilder.SetWildColor().SetDrawAmount(6).AddCards();
+uneBuilder.SetWildColor().SetDrawAmount(10).AddCards();
+uneBuilder.SetAction(UneAction.ColorRoulette).AddCards();
 
 var uneCards = uneBuilder.Build();
 // var cardSet = scope.ServiceProvider.GetRequiredService<IDictionary<int, UneCard>>();
@@ -117,7 +115,7 @@ var lyssie = new UnePlayer("Lyssie");
 var alex = new UnePlayer("Alex");
 
 var players = new List<UnePlayer> { rubi, lyssie, alex };
-var settings = new UneSettings
+var settings = new UneRules
 {
     ForcePlay = false,
     FreeDraw = false,

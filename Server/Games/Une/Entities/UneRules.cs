@@ -1,4 +1,6 @@
-﻿namespace CardHub.Games.Une.Entities;
+﻿using CardHub.Games.Common;
+
+namespace CardHub.Games.Une.Entities;
 
 public enum UneStackRule
 {
@@ -7,7 +9,7 @@ public enum UneStackRule
     None
 }
 
-public class UneSettings
+public class UneRules : IGameRules
 {
     // First playable card drawn during a player's turn must be played
     public required bool ForcePlay { get; init; }
@@ -29,6 +31,8 @@ public class UneSettings
     
     // Allows for stacking if DrawAmounts are equal, greater than or equal to, or no stacking
     public required UneStackRule UneStackRule { get; init; }
+    
+    public int BotsCount { get; init; }
 }
 
 /*

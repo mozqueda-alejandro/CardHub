@@ -96,4 +96,7 @@ public class Deck<TCard> : IDeck<TCard> where TCard : ICard
         DiscardPile.RemoveRange(0, DiscardPile.Count - 1);
         Shuffle();
     }
+    
+    public IEnumerator<TCard> GetEnumerator() => _cards.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() =>  GetEnumerator();
 }

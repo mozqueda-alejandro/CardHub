@@ -98,13 +98,19 @@ public class Order<TPlayer> : IEnumerable where TPlayer : IPlayer
         return _players.Remove(playerName) && _names.Remove(playerName);
     }
 
+    public void Clear()
+    {
+        _players.Clear();
+        _names.Clear();
+    }
+
     private int ComputeIndex(int offset)
     {
         return _direction switch
         {
             Direction.Forward => (_currentIndex + offset) % Count,
             Direction.Backward => (_currentIndex - offset) % Count,
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException(nameof(_direction))
         };
     }
 

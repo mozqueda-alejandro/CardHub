@@ -5,11 +5,7 @@ public interface IClient
     Guid ClientId { get; init; }
     string ConnectionId { get; init; }
     string RoomId { get; init; }
-}
-
-public interface IPlayerContext : IClient
-{
-    string DisplayName { get; init; }
+    string? DisplayName { get; init; }
 }
 
 public class Client : IClient
@@ -17,17 +13,13 @@ public class Client : IClient
     public required Guid ClientId { get; init; }
     public required string ConnectionId { get; init; }
     public required string RoomId { get; init; }
-}
-
-public class PlayerContext : Client, IPlayerContext
-{
-    public required string DisplayName { get; init; }
+    public required string? DisplayName { get; init; }
 }
 
 public class Room
 {
     public IClient Gameboard { get; init; }
-    public List<IPlayerContext> Players { get; } = [];
+    public List<IClient> Players { get; } = [];
 
     public Room(IClient gameboard)
     {
@@ -37,16 +29,24 @@ public class Room
     
 }
 
+public interface IClientManager
+{
+    IClient Current { get; }
+    IClient? Get(string clientId);
+    
+    string CurrentRoom { get; }
+}
+
 public class ClientManager(
     IDictionary<string, Room> _rooms,
     IDictionary<Guid, string> _connections,
-    IDictionary<string, IPlayerContext> _contextStore)
+    IDictionary<string, IClient> _contextStore)
 {
     // ConnectionId -> Context
     // ClientId -> ConnectionId
     // RoomId -> Room
     
-    public bool AddPlayer(IPlayerContext context)
+    public bool AddClient(IClient context)
     {
         var roomId = context.RoomId;
         

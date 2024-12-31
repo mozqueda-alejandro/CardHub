@@ -19,10 +19,7 @@ const buttonClasses = computed(() => {
 </script>
 
 <template>
-  <button
-      class="ch-height ch-radius"
-      :class="buttonClasses"
-  >
+  <button class="ch-height ch-radius" :class="buttonClasses">
     <slot>{{ props.label }}</slot>
   </button>
 </template>

@@ -10,7 +10,7 @@ export default defineNuxtPlugin(nuxtApp => {
         headers: {
             Accept: 'application/json'
         }
-    }) as typeof ofetch;
+    });
 
     return {
         provide: {

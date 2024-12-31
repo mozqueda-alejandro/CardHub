@@ -1,6 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardHub", "CardHub.csproj", "{0563492B-4AEF-4167-B71A-2687AD70BDBA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardHub.Domain", "CardHub.Domain\CardHub.Domain.csproj", "{296EC048-E8B5-4DC2-99A6-7FF084FE353C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardHub.Web", "CardHub.Web\CardHub.Web.csproj", "{FA3C754F-D2CC-467D-9DD4-B45BF453F7AF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{296EC048-E8B5-4DC2-99A6-7FF084FE353C} = {296EC048-E8B5-4DC2-99A6-7FF084FE353C}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardHub.Application", "CardHub.Application\CardHub.Application.csproj", "{2EF7CACD-293D-4FD1-818F-D97ADCB17A07}"
+	ProjectSection(ProjectDependencies) = postProject
+		{296EC048-E8B5-4DC2-99A6-7FF084FE353C} = {296EC048-E8B5-4DC2-99A6-7FF084FE353C}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +18,17 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0563492B-4AEF-4167-B71A-2687AD70BDBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0563492B-4AEF-4167-B71A-2687AD70BDBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0563492B-4AEF-4167-B71A-2687AD70BDBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0563492B-4AEF-4167-B71A-2687AD70BDBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{296EC048-E8B5-4DC2-99A6-7FF084FE353C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{296EC048-E8B5-4DC2-99A6-7FF084FE353C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{296EC048-E8B5-4DC2-99A6-7FF084FE353C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{296EC048-E8B5-4DC2-99A6-7FF084FE353C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA3C754F-D2CC-467D-9DD4-B45BF453F7AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA3C754F-D2CC-467D-9DD4-B45BF453F7AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA3C754F-D2CC-467D-9DD4-B45BF453F7AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA3C754F-D2CC-467D-9DD4-B45BF453F7AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EF7CACD-293D-4FD1-818F-D97ADCB17A07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EF7CACD-293D-4FD1-818F-D97ADCB17A07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EF7CACD-293D-4FD1-818F-D97ADCB17A07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EF7CACD-293D-4FD1-818F-D97ADCB17A07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

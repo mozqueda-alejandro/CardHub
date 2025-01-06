@@ -1,0 +1,10 @@
+
+All games require:
+CardSet
+DeckFactory
+
+Players
+RuleSet
+
+
+

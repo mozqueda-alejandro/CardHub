@@ -1,5 +1,5 @@
 ﻿import { defineStore } from 'pinia';
-import { HttpTransportType, type HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { type HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { GameType } from "~/types/enums";
 import { getUrl } from "~/utils/game";
 import { useCookie } from "#app";
@@ -11,40 +11,28 @@ export const useBaseStore = defineStore('base', () => {
     const { $api } = useNuxtApp();
 
     const gameConnection = ref<HubConnection | null>(null);
-    const jwtToken = useCookie<string>("jwt-token");
-    // if (!jwtToken.value) {
-    $api("/room", {
-        method: "POST",
-        body: JSON.stringify(GameType.Une)
-    }).then((res) => {
-        jwtToken.value = res;
-    })
-        .catch((err: Error) => {
-            console.log("JWT not acquired: ", err)
-        });
-    // }
+    const jwtToken = useCookie<string>("ch_token");
 
-    const result = $api("/test", {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${ jwtToken.value }`
-        }
-    });
+    // const result = $api("/test", {
+    //     method: "GET",
+    //     headers: {
+    //         "Content-Type": "application/json",
+    //         "Authorization": `Bearer ${ jwtToken.value }`
+    //     }
+    // });
 
-    async function tryJoinRoom(gameType: GameType) {
-        const webSocketUrl = `${ runtimeConfig.public.baseURL }/${ getUrl(gameType) }hub`;
+    async function tryCreateRoom(gameType: GameType) {
+
 
         // HubConnection configuration
         // https://learn.microsoft.com/en-us/aspnet/core/signalr/configuration?view=aspnetcore-8.0&tabs=dotnet#configure-client-options
+        const webSocketUrl = `${ runtimeConfig.public.baseURL }/${ getUrl(gameType) }hub`;
         gameConnection.value = new HubConnectionBuilder()
             .withUrl(webSocketUrl,
                 {
                     accessTokenFactory: () => {
                         return jwtToken.value;
-                    },
-                    // skipNegotiation: true,
-                    // transport: HttpTransportType.WebSockets
+                    }
                 }
             )
             .withStatefulReconnect()
@@ -76,6 +64,51 @@ export const useBaseStore = defineStore('base', () => {
         await gameConnection.value.invoke("BasePing");
         await gameConnection.value.invoke("Ping");
         // await gameConnection.value.invoke("JoinGame", {roomId:"123"});
+    }
+
+    async function tryJoinRoom(roomPin: string) {
+
+    }
+
+    async function createGBTokenRequest(gameType: GameType): Promise<string> {
+        return $api<string>("/tokens/gameboard", {
+            method: "POST",
+            body: JSON.stringify(gameType)
+        });
+    }
+
+    async function createPlayerTokenRequest(roomPin: number): Promise<string> {
+        return $api("/tokens/player", {
+            method: "POST",
+            body: JSON.stringify(roomPin)
+        });
+    }
+
+    async function updateTokenRequest(token: string): Promise<string> {
+        return $api("/tokens/update", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${ token }`
+            }
+        });
+    }
+
+    // convert to interface
+    // public record CreateGBTokenRequest(GameType GameType);
+    // public record CreatePlayerTokenRequest(int RoomPin);
+    // public record UpdateTokenRequest(IClient Client);
+
+    interface CreateGBTokenRequest {
+        GameType: GameType;
+    }
+
+    interface CreatePlayerTokenRequest {
+        RoomPin: number;
+    }
+
+    interface UpdateTokenRequest {
+        Client: IClient;
     }
 
     return { tryJoinRoom };

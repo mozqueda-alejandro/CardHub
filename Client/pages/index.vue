@@ -16,7 +16,12 @@ const isValidPin = computed(() => {
 });
 
 async function enterPin() {
-  console.log("attempting WS...");
+  console.log("attempting WS-PL");
+  await tryJoinRoom(GameType.Pl);
+}
+
+async function navigateToLibrary() {
+  console.log("attempting WS-GB");
   await tryJoinRoom(GameType.Une);
 }
 
@@ -51,7 +56,7 @@ function getSuitTransform(translateX: number, translateY: number, rotateDeg: num
         <PushableButton @click="enterPin" :disabled="false">Enter</PushableButton>
       </div>
       <div class="flex flex-col w-auto">
-        <PushableButton severity="secondary">Start a game</PushableButton>
+        <PushableButton @click="" severity="secondary">Start a game</PushableButton>
       </div>
     </div>
   </div>
